@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>TV Gifs</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+</head>
+<body>
+    <div id="buttonList"></div>
+    <div id="newButton">
+        <form>
+            <input id="newButton" type="text" value="">
+            <button id="addButton" type="button">Add Show</button>
+        </form>
+    </div>
+    <div id="gifArea"></div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+    <script type="text/javascript">
+    var topics = ["Spongebob", "HouseMD", "Game of Thrones", "Futurama", "Family Guy", "South Park", "Parks and Recreation"];
+    
+    function run(){
+        $("#buttonList").empty();
+
+        for (var i = 0; i < topics.length; i++){
+            $("#buttonList").append("<button value='" + topics[i] + "' class='topicButtons'>" + topics[i] + "</button>");
+        }
+    }
+
+    $(Document).on("click", ".topicButtons", function(event){
+        event.preventDefault();
+        
+        $("#gifArea").empty();
+        var q = $(this).val();
+        var queryURL = "https://api.giphy.com/v1/gifs/search?q=" +
+        q + "&api_key=T8MfEKNkcQnxycJ0pc2VqEMRzHcJKNQS&limit=10";
+
+        $.ajax({
+        url: queryURL,
+        method: "GET"
+      })
+        .then(function(response) {
+            var results = response.data;
+          for (var i = 0; i < results.length; i++) {
+            
+            var animated = results[i].images.fixed_height.url
+            var still = results[i].images.fixed_height_still.url
+
+            var gif = $("<div class='item' style='float: left'>");
+              
+            var rating = results[i].rating;
+
+            var p = $("<p>").text("Rating: " + rating);
+
+            var newGif = $("<img>");
+            newGif.addClass("toggleAnimate");
+            newGif.attr("src", still);
+            newGif.attr('data-state', 'still');
+            newGif.attr('data-animated', animated);
+            newGif.attr('data-still', still);
+
+            gif.append(p)
+            gif.append(newGif);
+            $("#gifArea").prepend(gif);
+          }
+        })
+    })
+
+    $(Document).on("click", ".toggleAnimate", function(event){
+
+        if ($(this).attr("data-state") == "still"){
+            $(this).attr("src", $(this).attr("data-animated"));
+            $(this).attr("data-state", "animated");
+        }
+        else {
+            $(this).attr("src", $(this).attr("data-still"));
+            $(this).attr("data-state", "still");
+        }
+    })
+
+    $("#addButton").on("click", function(event){
+        event.preventDefault();
+
+        var show = $("input").val();
+        topics.push(show);
+        run();
+        $("input").val("");
+    })
+
+    run();
+
+    </script>
+</body>
+</html>
